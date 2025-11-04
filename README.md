@@ -1,1 +1,1 @@
-# NumericalPhysics_OpticalBlackHole
+# OpticalBlackHole
