@@ -73,11 +73,11 @@ def plot_simulation(data, save=True):
     mag = np.abs(Ez)
     mag_normalized = mag / np.max(mag)
     
-    im2 = ax.imshow(mag_normalized.T, origin='lower', extent=extent, cmap='viridis', vmin=0, vmax=0.5)
+    im2 = ax.imshow(mag_normalized.T, origin='lower', extent=extent, cmap='hot', vmin=0, vmax=0.5)
     
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
-    plt.colorbar(im2, cax=cax, label='|E| (norm)')
+    plt.colorbar(im2, cax=cax, label='$|E_z| / max(|E_z|)$')
     
     # Drawing the annuli
     theta_center = 225; theta_width = 18
@@ -92,7 +92,7 @@ def plot_simulation(data, save=True):
                                  color='white', ls='-', linewidth=0.5, alpha=0.5))
     
     # --- POYNTING QUIVER ---
-    step = 30
+    step = int(params['resolution'])
     sl_x = slice(0, None, step); sl_y = slice(None, None, step)
     R_safe = R_grid.copy()
     R_sub = R_safe[sl_x, sl_y]
@@ -107,33 +107,36 @@ def plot_simulation(data, save=True):
     X_in = X_sub[mask_in]; Y_in = Y_sub[mask_in]
     
     max_val = np.max(np.hypot(U_in, V_in)) if len(U_in) > 0 else 1.0
-    ax.quiver(X_in, Y_in, U_in/max_val, V_in/max_val, color='white', pivot='tail', scale=10)
+    ax.quiver(X_in, Y_in, U_in/max_val, V_in/max_val, color='white', pivot='tail', scale=10, alpha=0.7)
     
     # --- TRAJECTORY PLOTS ---
     # 1. Geodesic (white dashed)
     ax.plot(X_geo, Y_geo, color='white', linewidth=5, linestyle='--', alpha=0.8, label='Geodesic (Theory)')
     
     # 2. Effective Poynting (solid red)
-    ax.plot(X_eff, Y_eff, color='red', linewidth=2.0, alpha=1.0, label='Poynting Avg (Sim)')
+    ax.plot(X_eff, Y_eff, color='blue', linewidth=2.0, alpha=1.0, label='Poynting Avg (Sim)')
     
     # Decorative elements
     ax.add_patch(Circle((0,0), R_h, color='white', fill=False, ls='-', linewidth=2))
+    ax.add_patch(Circle((0,0), R_h, color='black', fill=True))
     ax.text(-R_h + 0.5, 0, r'$R_h$', color='white', fontsize=12)
     
     label_text = r'$\hat{b}_{\infty} = ' + f'{b_inf}' + r'$' if (a_hat==0 and Q_hat==0) else r'$\hat{a}=' + f'{a_hat}' + r', \rho_Q=' + f'{Q_hat}' + r'$'
     ax.text(-L/2 + 1, -L/2 + 1, label_text, color='white', fontsize=14)
     
     ax.legend(loc='upper left', fontsize=10, framealpha=0.5, facecolor='black', edgecolor='white', labelcolor='white')
-    ax.axis('off')
+    ax.axis('on')
+    ax.set_xlabel('$\mu m$')
+    ax.set_ylabel('$\mu m$')
     plt.tight_layout()
     
     # Save figure with parameters in filename
     if save:
         fig_filename = f'fdfd_plot_a{a_hat}_Q{Q_hat}_b{b_inf}_res{resolution}.pdf'
-        plt.savefig(fig_filename, dpi=150, bbox_inches='tight', facecolor='black')
+        plt.savefig(fig_filename, dpi=150, bbox_inches='tight')
         print(f"Figure saved to {fig_filename}")
     
-    plt.show()
+    # plt.show()
 
 
 def find_latest_data_file():
